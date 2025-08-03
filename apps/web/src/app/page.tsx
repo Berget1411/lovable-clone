@@ -1,5 +1,5 @@
 "use client";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
@@ -7,11 +7,17 @@ import { trpc } from "@/utils/trpc";
 export default function Home() {
 	const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 	const [text, setText] = useState("");
+	const messages = useQuery(trpc.message.getAll.queryOptions());
+	const queryClient = useQueryClient();
 	const invokeInngest = useMutation(
-		trpc.invokeInngest.mutationOptions({
+		trpc.message.create.mutationOptions({
 			onSuccess: (data) => {
 				console.log(data);
 				toast.success("Inngest function successfully invoked");
+				queryClient.invalidateQueries(trpc.message.getAll.queryOptions());
+			},
+			onError: (e) => {
+				toast.error(e.message);
 			},
 		}),
 	);
@@ -44,12 +50,20 @@ export default function Home() {
 						type="button"
 						className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white"
 						onClick={() => {
-							invokeInngest.mutate({ text });
+							invokeInngest.mutate({ content: text });
 						}}
 					>
 						Invoke Inngest
 					</button>
 					<pre className="overflow-x-auto font-mono text-sm">{text}</pre>
+				</section>
+				<section className="rounded-lg border p-4">
+					<h2 className="mb-2 font-medium">Messages</h2>
+					<div className="flex flex-col gap-2">
+						{messages.data?.map((message) => (
+							<div key={message.id}>{message.content}</div>
+						))}
+					</div>
 				</section>
 			</div>
 		</div>

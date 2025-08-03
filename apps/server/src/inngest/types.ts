@@ -1,10 +1,10 @@
 import { EventSchemas } from "inngest";
 
-type DemoEventSent = {
-	name: "demo/event.sent";
+type CodeAgentRun = {
+	name: "code-agent/run";
 	data: {
 		message: string;
 	};
 };
 
-export const schemas = new EventSchemas().fromUnion<DemoEventSent>();
+export const schemas = new EventSchemas().fromUnion<CodeAgentRun>();

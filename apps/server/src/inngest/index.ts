@@ -1,5 +1,5 @@
-import { helloWorld } from "./functions";
+import { codeAgentFunction } from "./functions";
 
-export const functions = [helloWorld];
+export const functions = [codeAgentFunction];
 
 export { inngest } from "./client";

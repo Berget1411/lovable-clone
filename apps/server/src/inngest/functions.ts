@@ -4,15 +4,25 @@ import {
 	createNetwork,
 	createTool,
 	openai,
+	type Tool,
 } from "@inngest/agent-kit";
 import { z } from "zod";
+import { db } from "../db";
+import { fragment, message } from "../db/schema/agent";
 import { inngest } from "./client";
 import { PROMPT } from "./prompt";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
 
-export const helloWorld = inngest.createFunction(
-	{ id: "hello-world" },
-	{ event: "demo/event.sent" },
+interface AgentState {
+	summary: string;
+	files: {
+		[path: string]: string;
+	};
+}
+
+export const codeAgentFunction = inngest.createFunction(
+	{ id: "code-agent" },
+	{ event: "code-agent/run" },
 	async ({ event, step }) => {
 		const sandboxId = await step.run("get-sandbox-id", async () => {
 			const sandbox = await Sandbox.create("test-nextjs3");
@@ -20,7 +30,7 @@ export const helloWorld = inngest.createFunction(
 		});
 
 		// Create a new agent with a system prompt (you can add optional tools, too)
-		const codeAgent = createAgent({
+		const codeAgent = createAgent<AgentState>({
 			name: "code-agent",
 			description: "An expert coding agent",
 			system: PROMPT,
@@ -83,7 +93,7 @@ export const helloWorld = inngest.createFunction(
 							"createOrUpdateFiles",
 							async () => {
 								try {
-									const updatedFiles = network.state.data.fiels || {};
+									const updatedFiles = network.state.data.files || {};
 									const sandbox = await getSandbox(sandboxId);
 									for (const file of files) {
 										await sandbox.files.write(file.path, file.content);
@@ -140,7 +150,7 @@ export const helloWorld = inngest.createFunction(
 			},
 		});
 
-		const network = createNetwork({
+		const network = createNetwork<AgentState>({
 			name: "coding-agent-network",
 			agents: [codeAgent],
 			maxIter: 15,
@@ -155,10 +165,39 @@ export const helloWorld = inngest.createFunction(
 
 		const result = await network.run(event.data.message);
 
+		const isError =
+			!result.state.data.summary ||
+			Object.keys(result.state.data.files || {}).length === 0;
+
 		const sandboxUrl = await step.run("get-sandbox-url", async () => {
 			const sandbox = await getSandbox(sandboxId);
 			const host = sandbox.getHost(3000);
 			return `http://${host}`;
+		});
+
+		await step.run("save-result", async () => {
+			if (isError) {
+				return await db.insert(message).values({
+					content: "Something went wrong. Please try again.",
+					role: "assistant",
+					type: "error" as const,
+				});
+			}
+			const createMessage = await db
+				.insert(message)
+				.values({
+					content: result.state.data.summary,
+					role: "assistant",
+					type: "result" as const,
+				})
+				.returning();
+			await db.insert(fragment).values({
+				messageId: createMessage[0].id,
+				title: "Fragment",
+				sandboxUrl,
+				files: result.state.data.files,
+			});
+			return createMessage;
 		});
 
 		return {

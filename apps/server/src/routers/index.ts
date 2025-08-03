@@ -1,6 +1,5 @@
-import { z } from "zod";
-import { inngest } from "../inngest";
 import { protectedProcedure, publicProcedure, router } from "../lib/trpc";
+import { messageRouter } from "./message.router";
 import { todoRouter } from "./todo";
 
 export const appRouter = router({
@@ -14,13 +13,6 @@ export const appRouter = router({
 		};
 	}),
 	todo: todoRouter,
-	invokeInngest: publicProcedure
-		.input(z.object({ text: z.string() }))
-		.mutation(({ input }) => {
-			return inngest.send({
-				name: "demo/event.sent",
-				data: { message: input.text },
-			});
-		}),
+	message: messageRouter,
 });
 export type AppRouter = typeof appRouter;
