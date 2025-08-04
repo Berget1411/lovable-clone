@@ -6,6 +6,7 @@ import {
 	ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import type { Fragment } from "@/types/schema";
+import { FragmentWeb } from "./fragment-web";
 import { MessagesContainer } from "./messages-container";
 import { ProjectHeader } from "./project-header";
 
@@ -39,6 +40,7 @@ export function ProjectPage({ projectId }: ProjectPageProps) {
 					<ResizableHandle />
 					<ResizablePanel className="flex-1">
 						{/* TODO: Preview the messages */}
+						{activeFragment && <FragmentWeb data={activeFragment} />}
 					</ResizablePanel>
 				</ResizablePanelGroup>
 			</div>
