@@ -1,7 +1,9 @@
 "use client";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
+import type { Fragment } from "@/types/schema";
 import { trpc } from "@/utils/trpc";
+import { MessageLoader } from "../ui/message-loader";
 import { MessageCard } from "./message-card";
 import { MessageForm } from "./message-form";
 
@@ -9,25 +11,43 @@ import { MessageForm } from "./message-form";
 
 interface MessagesContainerProps {
 	projectId: number;
+	activeFragment: Fragment | null;
+	setActiveFragment: (fragment: Fragment | null) => void;
 }
 
-export function MessagesContainer({ projectId }: MessagesContainerProps) {
+export function MessagesContainer({
+	projectId,
+	activeFragment,
+	setActiveFragment,
+}: MessagesContainerProps) {
 	const { data: messages } = useSuspenseQuery(
-		trpc.message.getAll.queryOptions({ projectId }),
+		trpc.message.getAll.queryOptions(
+			{ projectId },
+			{
+				//temporary live updates
+				refetchInterval: 5000,
+			},
+		),
 	);
 	const bottomRef = useRef<HTMLDivElement>(null);
-	useEffect(() => {
-		const lastAssistantMessage = messages.findLast(
-			(message) => message.role === "assistant",
-		);
-		if (lastAssistantMessage) {
-			// set active fragment.
-		}
-	}, [messages]);
+	// TODO: fix this auto selecting the last fragment
+	// useEffect(() => {
+	//   const lastAssistantMessageWithFragment = messages.findLast(
+	//     (message) => message.role === "assistant" && !!message.fragment,
+	//   );
+	//   if (lastAssistantMessageWithFragment) {
+	//     // set active fragment.
+	//     setActiveFragment(lastAssistantMessageWithFragment.fragment);
+	//   }
+	// }, [messages, setActiveFragment]);
 
 	useEffect(() => {
 		bottomRef.current?.scrollIntoView({ behavior: "smooth" });
 	}, [messages.length]);
+
+	const isLastMessageUser =
+		messages.length > 0 && messages[messages.length - 1].role === "user";
+
 	return (
 		<div className="flex h-full flex-col">
 			{/* Scrollable messages area */}
@@ -40,11 +60,14 @@ export function MessagesContainer({ projectId }: MessagesContainerProps) {
 							role={message.role}
 							fragment={message.fragment || undefined}
 							createdAt={message.createdAt || new Date().toISOString()}
-							isActiveFragment={false}
-							onFragmentClick={() => {}}
+							isActiveFragment={activeFragment?.id === message.fragment?.id}
+							onFragmentClick={() => {
+								setActiveFragment(message.fragment);
+							}}
 							type={message.type}
 						/>
 					))}
+					{isLastMessageUser && <MessageLoader />}
 					<div ref={bottomRef} />
 				</div>
 			</div>

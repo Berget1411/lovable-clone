@@ -1,27 +1,39 @@
 "use client";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import {
 	ResizableHandle,
 	ResizablePanel,
 	ResizablePanelGroup,
 } from "@/components/ui/resizable";
+import type { Fragment } from "@/types/schema";
 import { MessagesContainer } from "./messages-container";
+import { ProjectHeader } from "./project-header";
 
 interface ProjectPageProps {
 	projectId: number;
 }
 
 export function ProjectPage({ projectId }: ProjectPageProps) {
+	const [activeFragment, setActiveFragment] = useState<Fragment | null>(null);
 	return (
 		<div className="flex h-screen w-screen flex-col">
-			<div className="flex h-16 w-full items-center justify-between border-b">
-				<h1 className="text-2xl font-bold">Project {projectId}</h1>
+			{/* Fixed Project Header */}
+			<div className="relative z-50 shrink-0">
+				<Suspense fallback={<div>Loading project header...</div>}>
+					<ProjectHeader projectId={projectId} />
+				</Suspense>
 			</div>
-			<div className="flex flex-1">
+
+			{/* Main Content Area */}
+			<div className="flex flex-1 overflow-hidden">
 				<ResizablePanelGroup direction="horizontal">
 					<ResizablePanel className="flex-1">
 						<Suspense fallback={<div>Loading project...</div>}>
-							<MessagesContainer projectId={projectId} />
+							<MessagesContainer
+								projectId={projectId}
+								activeFragment={activeFragment}
+								setActiveFragment={setActiveFragment}
+							/>
 						</Suspense>
 					</ResizablePanel>
 					<ResizableHandle />
