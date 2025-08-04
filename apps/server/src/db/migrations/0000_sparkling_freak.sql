@@ -1,3 +1,34 @@
+CREATE TABLE `project` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`name` text NOT NULL,
+	`messages` integer NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP),
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP),
+	FOREIGN KEY (`messages`) REFERENCES `message`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `fragment` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`message_id` integer NOT NULL,
+	`sandbox_url` text,
+	`title` text,
+	`files` text,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP),
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP),
+	FOREIGN KEY (`message_id`) REFERENCES `message`(`id`) ON UPDATE no action ON DELETE no action
+);
+--> statement-breakpoint
+CREATE TABLE `message` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`content` text NOT NULL,
+	`role` text NOT NULL,
+	`type` text NOT NULL,
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP),
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP),
+	`fragment_id` integer,
+	`project_id` integer
+);
+--> statement-breakpoint
 CREATE TABLE `account` (
 	`id` text PRIMARY KEY NOT NULL,
 	`account_id` text NOT NULL,

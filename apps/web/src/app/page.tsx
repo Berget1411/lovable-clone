@@ -1,13 +1,26 @@
 "use client";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/utils/trpc";
 
 export default function Home() {
+	const router = useRouter();
 	const healthCheck = useQuery(trpc.healthCheck.queryOptions());
 	const [text, setText] = useState("");
 	const messages = useQuery(trpc.message.getAll.queryOptions());
+	const createProject = useMutation(
+		trpc.project.create.mutationOptions({
+			onSuccess: (data: any) => {
+				router.push(`/projects/${data.id}`);
+				toast.success("Project created");
+			},
+			onError: (error: any) => {
+				toast.error(error.message);
+			},
+		}),
+	);
 	const queryClient = useQueryClient();
 	const invokeInngest = useMutation(
 		trpc.message.create.mutationOptions({
@@ -50,7 +63,7 @@ export default function Home() {
 						type="button"
 						className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-white"
 						onClick={() => {
-							invokeInngest.mutate({ content: text });
+							createProject.mutate({ content: text });
 						}}
 					>
 						Invoke Inngest

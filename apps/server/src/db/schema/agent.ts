@@ -11,6 +11,7 @@ export const message = sqliteTable("message", {
 	createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
 	updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
 	fragmentId: integer("fragment_id"),
+	projectId: integer("project_id").references(() => Project.id),
 });
 
 export const fragment = sqliteTable("fragment", {
@@ -23,6 +24,13 @@ export const fragment = sqliteTable("fragment", {
 	title: text("title"),
 	files: text("files", { mode: "json" }),
 
+	createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+	updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const Project = sqliteTable("project", {
+	id: integer("id").primaryKey({ autoIncrement: true }),
+	name: text("name").notNull(),
 	createdAt: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
 	updatedAt: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
 });
