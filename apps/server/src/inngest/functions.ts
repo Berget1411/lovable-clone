@@ -181,6 +181,7 @@ export const codeAgentFunction = inngest.createFunction(
 					content: "Something went wrong. Please try again.",
 					role: "assistant",
 					type: "error" as const,
+					projectId: event.data.projectId,
 				});
 			}
 			const createMessage = await db
@@ -189,6 +190,7 @@ export const codeAgentFunction = inngest.createFunction(
 					content: result.state.data.summary,
 					role: "assistant",
 					type: "result" as const,
+					projectId: event.data.projectId,
 				})
 				.returning();
 			await db.insert(fragment).values({

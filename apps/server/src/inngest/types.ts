@@ -4,6 +4,7 @@ type CodeAgentRun = {
 	name: "code-agent/run";
 	data: {
 		message: string;
+		projectId: number;
 	};
 };
 

@@ -30,6 +30,7 @@
 		"drizzle-orm": "^0.44.2",
 		"hono": "^4.8.2",
 		"inngest": "^3.40.1",
+		"random-word-slugs": "^0.1.7",
 		"zod": "3.22.4"
 	},
 	"devDependencies": {

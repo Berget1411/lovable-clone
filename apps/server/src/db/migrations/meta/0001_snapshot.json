@@ -1,9 +1,49 @@
 {
 	"version": "6",
 	"dialect": "sqlite",
-	"id": "c616dfe5-2dde-4155-afe1-af36c98205f2",
-	"prevId": "d2301f92-5dde-4ac3-8086-6229e22138f7",
+	"id": "687ad931-55c2-4f92-a21b-1039d3926cc9",
+	"prevId": "0e2f52a0-45c8-41e0-9ee4-ef43270541e5",
 	"tables": {
+		"project": {
+			"name": "project",
+			"columns": {
+				"id": {
+					"name": "id",
+					"type": "integer",
+					"primaryKey": true,
+					"notNull": true,
+					"autoincrement": true
+				},
+				"name": {
+					"name": "name",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": true,
+					"autoincrement": false
+				},
+				"created_at": {
+					"name": "created_at",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"default": "(CURRENT_TIMESTAMP)"
+				},
+				"updated_at": {
+					"name": "updated_at",
+					"type": "text",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false,
+					"default": "(CURRENT_TIMESTAMP)"
+				}
+			},
+			"indexes": {},
+			"foreignKeys": {},
+			"compositePrimaryKeys": {},
+			"uniqueConstraints": {},
+			"checkConstraints": {}
+		},
 		"fragment": {
 			"name": "fragment",
 			"columns": {
@@ -44,17 +84,19 @@
 				},
 				"created_at": {
 					"name": "created_at",
-					"type": "integer",
+					"type": "text",
 					"primaryKey": false,
-					"notNull": true,
-					"autoincrement": false
+					"notNull": false,
+					"autoincrement": false,
+					"default": "(CURRENT_TIMESTAMP)"
 				},
 				"updated_at": {
 					"name": "updated_at",
-					"type": "integer",
+					"type": "text",
 					"primaryKey": false,
-					"notNull": true,
-					"autoincrement": false
+					"notNull": false,
+					"autoincrement": false,
+					"default": "(CURRENT_TIMESTAMP)"
 				}
 			},
 			"indexes": {},
@@ -126,10 +168,27 @@
 					"primaryKey": false,
 					"notNull": false,
 					"autoincrement": false
+				},
+				"project_id": {
+					"name": "project_id",
+					"type": "integer",
+					"primaryKey": false,
+					"notNull": false,
+					"autoincrement": false
 				}
 			},
 			"indexes": {},
-			"foreignKeys": {},
+			"foreignKeys": {
+				"message_project_id_project_id_fk": {
+					"name": "message_project_id_project_id_fk",
+					"tableFrom": "message",
+					"tableTo": "project",
+					"columnsFrom": ["project_id"],
+					"columnsTo": ["id"],
+					"onDelete": "no action",
+					"onUpdate": "no action"
+				}
+			},
 			"compositePrimaryKeys": {},
 			"uniqueConstraints": {},
 			"checkConstraints": {}
