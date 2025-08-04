@@ -1,3 +1,5 @@
+import { ProjectPage } from "@/components/project/project-page";
+
 export default async function Page({
 	params,
 }: {
@@ -5,5 +7,5 @@ export default async function Page({
 }) {
 	const { projectId } = await params;
 
-	return <div>Project {projectId}</div>;
+	return <ProjectPage projectId={Number(projectId)} />;
 }

@@ -8,32 +8,24 @@ import { trpc } from "@/utils/trpc";
 export default function Home() {
 	const router = useRouter();
 	const healthCheck = useQuery(trpc.healthCheck.queryOptions());
+	const queryClient = useQueryClient();
 	const [text, setText] = useState("");
-	const messages = useQuery(trpc.message.getAll.queryOptions());
+	// Remove this - messages need a projectId which we don't have on the home page
 	const createProject = useMutation(
 		trpc.project.create.mutationOptions({
-			onSuccess: (data: any) => {
-				router.push(`/projects/${data.id}`);
+			onSuccess: (data: { project: { id: number } }) => {
+				router.push(`/projects/${data.project.id}`);
 				toast.success("Project created");
+				queryClient.invalidateQueries(
+					trpc.message.getAll.queryOptions({ projectId: data.project.id }),
+				);
 			},
-			onError: (error: any) => {
+			onError: (error: { message: string }) => {
 				toast.error(error.message);
 			},
 		}),
 	);
-	const queryClient = useQueryClient();
-	const invokeInngest = useMutation(
-		trpc.message.create.mutationOptions({
-			onSuccess: (data) => {
-				console.log(data);
-				toast.success("Inngest function successfully invoked");
-				queryClient.invalidateQueries(trpc.message.getAll.queryOptions());
-			},
-			onError: (e) => {
-				toast.error(e.message);
-			},
-		}),
-	);
+	// Removed unused variables and functions
 	return (
 		<div className="container mx-auto max-w-3xl px-4 py-2">
 			<pre className="overflow-x-auto font-mono text-sm">Lovable Clone</pre>
@@ -71,12 +63,10 @@ export default function Home() {
 					<pre className="overflow-x-auto font-mono text-sm">{text}</pre>
 				</section>
 				<section className="rounded-lg border p-4">
-					<h2 className="mb-2 font-medium">Messages</h2>
-					<div className="flex flex-col gap-2">
-						{messages.data?.map((message) => (
-							<div key={message.id}>{message.content}</div>
-						))}
-					</div>
+					<h2 className="mb-2 font-medium">Create Project</h2>
+					<p className="text-muted-foreground text-sm">
+						Enter a message to create a new project and get started.
+					</p>
 				</section>
 			</div>
 		</div>

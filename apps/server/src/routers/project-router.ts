@@ -1,3 +1,4 @@
+import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { generateSlug } from "random-word-slugs";
 import z from "zod";
@@ -7,6 +8,21 @@ import { inngest } from "../inngest";
 import { publicProcedure, router } from "../lib/trpc";
 
 export const projectRouter = router({
+	getOne: publicProcedure
+		.input(z.object({ id: z.number().min(1, "Project is required") }))
+		.query(async ({ input }) => {
+			const project = await db
+				.select()
+				.from(Project)
+				.where(eq(Project.id, input.id));
+			if (!project[0]) {
+				throw new TRPCError({
+					code: "NOT_FOUND",
+					message: "Project not found",
+				});
+			}
+			return project[0];
+		}),
 	getAll: publicProcedure.query(async () => {
 		return await db
 			.select({
@@ -76,6 +92,8 @@ export const projectRouter = router({
 				.leftJoin(fragment, eq(fragment.messageId, message.id))
 				.where(eq(message.id, createMessage[0].id));
 
-			return messageWithFragment[0];
+			return {
+				project: createdProject[0],
+			};
 		}),
 });

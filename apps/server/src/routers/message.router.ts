@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import z from "zod";
 import { db } from "../db";
 import { fragment, message } from "../db/schema/agent";
@@ -6,30 +6,37 @@ import { inngest } from "../inngest";
 import { publicProcedure, router } from "../lib/trpc";
 
 export const messageRouter = router({
-	getAll: publicProcedure.query(async () => {
-		return await db
-			.select({
-				id: message.id,
-				content: message.content,
-				role: message.role,
-				type: message.type,
-				createdAt: message.createdAt,
-				updatedAt: message.updatedAt,
-				fragmentId: message.fragmentId,
-				fragment: {
-					id: fragment.id,
-					messageId: fragment.messageId,
-					sandboxUrl: fragment.sandboxUrl,
-					title: fragment.title,
-					files: fragment.files,
-					createdAt: fragment.createdAt,
-					updatedAt: fragment.updatedAt,
-				},
-			})
-			.from(message)
-			.leftJoin(fragment, eq(fragment.messageId, message.id))
-			.orderBy(desc(message.createdAt));
-	}),
+	getAll: publicProcedure
+		.input(
+			z.object({
+				projectId: z.number().min(1, "Project is required"),
+			}),
+		)
+		.query(async ({ input }) => {
+			return await db
+				.select({
+					id: message.id,
+					content: message.content,
+					role: message.role,
+					type: message.type,
+					createdAt: message.createdAt,
+					updatedAt: message.updatedAt,
+					fragmentId: message.fragmentId,
+					fragment: {
+						id: fragment.id,
+						messageId: fragment.messageId,
+						sandboxUrl: fragment.sandboxUrl,
+						title: fragment.title,
+						files: fragment.files,
+						createdAt: fragment.createdAt,
+						updatedAt: fragment.updatedAt,
+					},
+				})
+				.from(message)
+				.leftJoin(fragment, eq(fragment.messageId, message.id))
+				.where(eq(message.projectId, input.projectId))
+				.orderBy(message.createdAt);
+		}),
 	create: publicProcedure
 		.input(
 			z.object({
